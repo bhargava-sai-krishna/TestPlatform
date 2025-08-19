@@ -1,0 +1,5 @@
+test all APIS
+take screenshorts of postman
+add unit test for backend
+add frontend
+add readme

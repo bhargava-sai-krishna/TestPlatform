@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "Exam Platform - Flask Auth",
+    "_postman_id": "b6e0e3de-9f54-4a92-9a9b-000000000001",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{host}}/health"
+      }
+    },
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{host}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"student@example.com\", \"password\": \"Passw0rd!\", \"full_name\": \"Student One\"}"
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{host}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"student@example.com\", \"password\": \"Passw0rd!\"}"
+        }
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": "{{host}}/api/auth/me"
+      }
+    },
+    {
+      "name": "Refresh",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{refresh_token}}"
+          }
+        ],
+        "url": "{{host}}/api/auth/refresh"
+      }
+    }
+  ]
+}
