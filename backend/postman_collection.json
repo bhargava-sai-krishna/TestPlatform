@@ -1,27 +1,25 @@
 {
   "info": {
-    "name": "Exam Platform - Flask Auth",
-    "_postman_id": "b6e0e3de-9f54-4a92-9a9b-000000000001",
+    "name": "Exam Platform - Flask Auth & Exam",
+    "_postman_id": "b6e0e3de-9f54-4a92-9a9b-000000000002",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    { "key": "host", "value": "http://127.0.0.1:8001" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "session_id", "value": "" }
+  ],
   "item": [
     {
       "name": "Health",
-      "request": {
-        "method": "GET",
-        "url": "{{host}}/health"
-      }
+      "request": { "method": "GET", "url": "{{host}}/health" }
     },
     {
       "name": "Register",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "url": "{{host}}/api/auth/register",
         "body": {
           "mode": "raw",
@@ -33,12 +31,7 @@
       "name": "Login",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "url": "{{host}}/api/auth/login",
         "body": {
           "mode": "raw",
@@ -50,12 +43,7 @@
       "name": "Me",
       "request": {
         "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{access_token}}"
-          }
-        ],
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
         "url": "{{host}}/api/auth/me"
       }
     },
@@ -63,13 +51,38 @@
       "name": "Refresh",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{refresh_token}}"
-          }
-        ],
+        "header": [{ "key": "Authorization", "value": "Bearer {{refresh_token}}" }],
         "url": "{{host}}/api/auth/refresh"
+      }
+    },
+    {
+      "name": "Exam - Start",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{host}}/api/exam/start",
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      }
+    },
+    {
+      "name": "Exam - Submit",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{host}}/api/exam/submit",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": {{session_id}},\n  \"answers\": [\n    { \"question_id\": 1, \"chosen_option\": \"A\" },\n    { \"question_id\": 2, \"chosen_option\": \"B\" }\n  ]\n}"
+        }
       }
     }
   ]
