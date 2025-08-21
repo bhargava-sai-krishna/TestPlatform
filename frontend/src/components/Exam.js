@@ -1,68 +1,121 @@
 import React, { useState, useEffect } from "react";
+import { apiRequest } from "../utils/api";
 
-// Dummy questions for now
-const QUESTIONS = [
-  { id: 1, text: "What is 2 + 2?", options: ["2", "3", "4", "5"] },
-  { id: 2, text: "Capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"] },
-  { id: 3, text: "React is a ___?", options: ["Framework", "Library", "Language", "Tool"] },
-];
-
-export default function Exam() {
+export default function Exam({ token, onExit }) {
+  const [sessionId, setSessionId] = useState(null);
+  const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 mins in seconds
+  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 mins
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(null);
+
+  // start exam on mount
+  useEffect(() => {
+    async function startExam() {
+      try {
+        const res = await apiRequest("/api/exam/start", "POST", null, token);
+        setSessionId(res.session_id);
+        setQuestions(res.questions);
+      } catch (err) {
+        console.error("Error starting exam:", err);
+      }
+    }
+    startExam();
+  }, [token]);
 
   useEffect(() => {
-    if (timeLeft <= 0 || submitted) return;
-    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    if (submitted) return;
+    if (timeLeft <= 0) {
+      handleSubmit(); 
+      return;
+    }
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
+    // eslint-disable-next-line
   }, [timeLeft, submitted]);
 
   function handleAnswer(option) {
-    setAnswers({ ...answers, [QUESTIONS[current].id]: option });
+    setAnswers({ ...answers, [questions[current].id]: option });
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    if (submitted) return;
     setSubmitted(true);
-    console.log("Submitted answers:", answers);
-    alert("✅ Exam submitted! Check console for answers.");
+
+    try {
+      const formatted = Object.keys(answers).map((qid) => ({
+        question_id: parseInt(qid),
+        chosen_option: answers[qid],
+      }));
+
+      const res = await apiRequest(
+        "/api/exam/submit",
+        "POST",
+        { session_id: sessionId, answers: formatted },
+        token
+      );
+
+      setScore(res.score);
+    } catch (err) {
+      console.error("Error submitting exam:", err);
+    }
   }
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  const q = QUESTIONS[current];
+
+  if (!questions.length) return <p>Loading exam...</p>;
+
+  const q = questions[current];
 
   return (
-    <div>
-      <h2>Exam</h2>
-      <p>⏰ Time left: {minutes}:{seconds.toString().padStart(2, "0")}</p>
+    <div style={{ padding: "20px" }}>
+      <h2>📝 Exam</h2>
+      <p>
+        ⏰ Time left: {minutes}:{seconds.toString().padStart(2, "0")}
+      </p>
 
       {!submitted ? (
         <div>
           <h3>{q.text}</h3>
-          {q.options.map((opt, i) => (
+          {Object.entries(q.options).map(([key, value]) => (
             <button
-              key={i}
+              key={key}
               style={{
-                background: answers[q.id] === opt ? "lightgreen" : "white",
-                margin: "5px"
+                background: answers[q.id] === key ? "lightgreen" : "white",
+                margin: "5px",
               }}
-              onClick={() => handleAnswer(opt)}
+              onClick={() => handleAnswer(key)}
             >
-              {opt}
+              {key}. {value}
             </button>
           ))}
+
           <div style={{ marginTop: "10px" }}>
-            <button disabled={current === 0} onClick={() => setCurrent(c => c - 1)}>⬅ Prev</button>
-            <button disabled={current === QUESTIONS.length - 1} onClick={() => setCurrent(c => c + 1)}>Next ➡</button>
+            <button
+              disabled={current === 0}
+              onClick={() => setCurrent((c) => c - 1)}
+            >
+              ⬅ Prev
+            </button>
+            <button
+              disabled={current === questions.length - 1}
+              onClick={() => setCurrent((c) => c + 1)}
+            >
+              Next ➡
+            </button>
           </div>
+
           <div style={{ marginTop: "10px" }}>
             <button onClick={handleSubmit}>Submit Exam</button>
           </div>
         </div>
       ) : (
-        <h3>✅ Exam submitted successfully!</h3>
+        <>
+          <h3>✅ Exam submitted! Your score: {score}</h3>
+          <button onClick={onExit}>Back to Profile</button>
+        </>
       )}
     </div>
   );

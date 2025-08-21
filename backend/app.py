@@ -5,6 +5,7 @@ from app.extensions import db, jwt, init_cors
 from app.routes.auth import bp as auth_bp
 from flasgger import Swagger
 from flask.cli import FlaskGroup
+from app.routes.exam import bp as exam_bp
 
 def create_app():
     app = Flask(__name__)
@@ -16,12 +17,15 @@ def create_app():
     Migrate(app, db)
     jwt.init_app(app)
     init_cors(app, [o.strip() for o in app.config.get("CORS_ORIGINS","").split(",") if o.strip()])
+    print("CORS_ORIGINS:", app.config.get("CORS_ORIGINS"))
+
 
     with app.app_context():
         from app import models  # noqa
         db.create_all()
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(exam_bp)
 
     @app.get("/health")
     def health():
