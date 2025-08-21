@@ -135,6 +135,8 @@ Content-Type: application/json
 }
 ```
 
+- Note: I have implemented a feature to prevent the brute force attack. The first login attempt will definitely fail, the real user might think that he has typed the credentials wrong and re-enter them. But the same cannot be said for a attacker
+
 #### Profile (Me)
 ```
 GET /api/auth/me
