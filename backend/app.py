@@ -4,6 +4,7 @@ from app.config import Config
 from app.extensions import db, jwt, init_cors
 from app.routes.auth import bp as auth_bp
 from flasgger import Swagger
+from flask.cli import FlaskGroup
 
 def create_app():
     app = Flask(__name__)
@@ -68,6 +69,7 @@ def create_app():
 
 
 app = create_app()
+cli = FlaskGroup(app)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8001, debug=True)

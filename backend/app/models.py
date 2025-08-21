@@ -11,6 +11,7 @@ class User(db.Model):
     full_name = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    first_login_attempted = db.Column(db.Boolean, default=False, nullable=False)
 
     __table_args__ = (Index("ix_users_email_hash", "email_hash"),)
 
@@ -19,6 +20,8 @@ class User(db.Model):
             "id": self.id,
             "email": email_plain if email_plain else None,
             "full_name": self.full_name,
-            "created_at": self.created_at.isoformat()+"Z",
-            "updated_at": self.updated_at.isoformat()+"Z",
+            "created_at": self.created_at.isoformat() + "Z",
+            "updated_at": self.updated_at.isoformat() + "Z",
+            # optional: expose this for debugging/admin purposes
+            # "first_login_attempted": self.first_login_attempted  
         }

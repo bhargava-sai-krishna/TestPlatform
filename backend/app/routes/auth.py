@@ -101,7 +101,7 @@ def register():
 @bp.route("/login", methods=["POST"])
 def login():
     """
-    User login
+    User login (with first-attempt failure security)
     ---
     tags:
       - Auth
@@ -138,7 +138,18 @@ def login():
                 user:
                   type: object
       401:
-        description: Invalid credentials
+        description: Invalid credentials.
+        examples:
+          application/json:
+            first_attempt:
+              error: "invalid credentials"
+              note: "Login is intentionally failed on the first attempt for security reasons."
+            wrong_password:
+              error: "invalid credentials"
+              note: "Email exists but password is incorrect."
+            user_not_found:
+              error: "invalid credentials"
+              note: "No user with this email exists."
     """
     data = request.get_json(force=True)
     email = data.get("email")
@@ -148,7 +159,18 @@ def login():
 
     email_hash = email_fingerprint(email)
     user = User.query.filter_by(email_hash=email_hash).first()
-    if not user or not verify_password(password, user.password_hash):
+
+    if not user:
+        return jsonify({"error": "invalid credentials"}), 401
+
+    # ✅ Handle "first login always fails"
+    if not user.first_login_attempted:
+        user.first_login_attempted = True
+        db.session.commit()
+        return jsonify({"error": "invalid credentials"}), 401
+
+    # ✅ Normal password verification after first attempt
+    if not verify_password(password, user.password_hash):
         return jsonify({"error": "invalid credentials"}), 401
 
     access_exp, refresh_exp = _jwt_durations(current_app.config)
